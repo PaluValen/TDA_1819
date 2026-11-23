@@ -25,6 +25,7 @@ entity pc is
 	generic (
 		ProgName		: STRING;
 		Pipelining		: BOOLEAN;
+		Forwarding		: BOOLEAN;
 		Cores 			: INTEGER); 
 		
 	port (
@@ -61,7 +62,8 @@ architecture PC_ARCHITECTURE of pc is
 	
 	component cpu
 		generic (
-			Pipelining				: BOOLEAN);
+			Pipelining				: BOOLEAN;
+			Forwarding				: BOOLEAN);
 		port (
 			DoneCpuUser				: out std_logic;
 			DataAddrBusCpu			: out std_logic_vector(15 downto 0);
@@ -222,7 +224,8 @@ begin
 			
 	UUT2: cpu 
 		generic map (
-			Pipelining				=> Pipelining)
+			Pipelining				=> Pipelining,
+			Forwarding				=> Forwarding)
 		port map (
 			DoneCpuUser				=> DoneCpuUser,
 			DataAddrBusCpu			=> DataAddrBusCpu,

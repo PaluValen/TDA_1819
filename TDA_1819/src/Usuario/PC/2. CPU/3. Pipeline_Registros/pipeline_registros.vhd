@@ -59,6 +59,9 @@ use std.TEXTIO.all;
 
 
 entity pipeline_registros is
+	
+	generic (
+		Forwarding	: BOOLEAN);
 
     port (
 		RecInMA			: out memaccess_record;
@@ -179,6 +182,11 @@ begin
 		WBRecords(1).data.execute <= DataEXtoWB;
 		WBFPRecords(1).data.execute <= DataEXtoWB;
 		WAIT FOR 1 ns;
+		
+		if ((StallSTRW = '0') and (StallWAWAux = '0')) then	--Si no hay ningún atasco, se carga el resultado de execute en el registro intermedio de adelantamiento
+    		RegFwdEXtoMA <= DataEXtoRFw;
+		end if;
+		
 		if ((StallSTRW = '1') or (StallWAWAux = '1')) then 
 			MAFPRecords(3) <= MAFPRecords(2);
 			MAFPRecords(2) <= MAFPRecords(1);

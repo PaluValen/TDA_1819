@@ -115,7 +115,8 @@ USE IEEE.std_logic_1164.all;
 entity raw_waw_detector is
 	
 	generic (
-		Pipelining	: BOOLEAN);
+		Pipelining	: BOOLEAN;
+		Forwarding	: BOOLEAN);
 	
 	port ( 
 		WbRegDoneWAW		: out 	writeback_record;

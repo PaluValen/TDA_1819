@@ -27,7 +27,8 @@ use std.TEXTIO.all;
 entity etapas is	  
 	
 	generic (
-		Pipelining	: BOOLEAN);
+		Pipelining	: BOOLEAN;
+		Forwarding	: BOOLEAN);
 		
 	port (
 		StallHLT				: out	std_logic;

@@ -26,7 +26,8 @@ use std.TEXTIO.all;
 entity cpu is
 	
 	generic (
-		Pipelining	: BOOLEAN); 
+		Pipelining	: BOOLEAN;
+		Forwarding  : BOOLEAN); 
 		
 	port (
 		DoneCpuUser				: out std_logic;
@@ -78,7 +79,8 @@ architecture CPU_ARCHITECTURE of cpu is
 	
 	component etapas 
 		generic (
-			Pipelining				: BOOLEAN);
+			Pipelining				: BOOLEAN;
+			Forwarding  			: BOOLEAN);
 		port (
 			StallHLT				: out	std_logic;
 			StopInit				: out   std_logic;
@@ -159,6 +161,8 @@ architecture CPU_ARCHITECTURE of cpu is
 	end component;
 	
 	component pipeline_registros
+		generic (
+			Forwarding  			: BOOLEAN);
 		port (
 			RecInMA				: out memaccess_record;
 			RecInWB				: out writeback_record;
@@ -179,7 +183,8 @@ architecture CPU_ARCHITECTURE of cpu is
 	
 	component atascos
 		generic (
-			Pipelining			: BOOLEAN);
+			Pipelining			: BOOLEAN;
+			Forwarding		: BOOLEAN);
 		port (
 			StallSTR			: out 	std_logic;
 			WbRegDoneWAW		: out 	writeback_record;
@@ -385,7 +390,8 @@ begin
 			
 	UUT2: etapas
 		generic map (
-			Pipelining				=> Pipelining)
+		Pipelining				=> Pipelining,
+		Forwarding 				=> Forwarding)
 		port map (
 			StallHLT				=> StallHLT,
 			StopInit				=> StopInit,
@@ -465,6 +471,8 @@ begin
 			EnableWB				=> EnableWB);
 
 	UUT3: pipeline_registros
+		generic map (
+			Forwarding 				=> Forwarding)
 		port map (
 			RecInMA				=> RecInMA,
 			RecInWB				=> RecInWB,
@@ -484,7 +492,8 @@ begin
 			
 	UUT4: atascos
 		generic map (
-			Pipelining			=> Pipelining)
+			Pipelining			=> Pipelining,
+			Forwarding 			=> Forwarding)
 		port map ( 
 			StallSTR			=> StallSTR,
 			WbRegDoneWAW		=> WbRegDoneWAW,

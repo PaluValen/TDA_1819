@@ -35,7 +35,8 @@ use ieee_proposed.float_pkg.all;
 entity atascos is
 	
 	generic (
-		Pipelining	: BOOLEAN);
+		Pipelining	: BOOLEAN;
+		Forwarding  : BOOLEAN);
 	
 	port ( 
 		StallSTR			: out 	std_logic;
@@ -87,7 +88,8 @@ architecture ATASCOS_ARCHITECTURE of atascos is
 	
 	component raw_waw_detector 
 		generic (
-			Pipelining			: BOOLEAN);
+			Pipelining			: BOOLEAN;
+			Forwarding  		: BOOLEAN);
 		port ( 
 			WbRegDoneWAW		: out 	writeback_record;
 			StallWAWAux			: out 	std_logic;
@@ -135,7 +137,8 @@ begin
 	
 	UUT2: raw_waw_detector
 		generic map (
-			Pipelining			=> Pipelining)
+			Pipelining			=> Pipelining,
+			Forwarding  		=> Forwarding)
 		port map (
 			WbRegDoneWAW		=> WbRegDoneWAW,
 			StallWAWAux			=> StallWAWAux,
