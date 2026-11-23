@@ -97,6 +97,7 @@ architecture CPU_ARCHITECTURE of cpu is
 			DataRegInEXALU			: out   std_logic_vector(31 downto 0);
 			DataRegInEXFPU			: out   std_logic_vector(31 downto 0);
 			DataEXtoWB				: out   std_logic_vector(31 downto 0);
+			DataEXtoRFw				: out 	std_logic_vector(31 downto 0); --Señal para enviar salida de la etapa execute al registro de Forwarding
 			DataMAtoWB				: out   std_logic_vector(31 downto 0);
 			DataRegInIF				: out   std_logic_vector(31 downto 0);
 			WbRegCheckWAW			: out 	writeback_record;
@@ -169,6 +170,7 @@ architecture CPU_ARCHITECTURE of cpu is
 			IDtoMA				: in  memaccess_record;
 			IDtoWB				: in  writeback_record;
 			DataEXtoWB			: in  std_logic_vector(31 downto 0);
+			DataEXtoRFw			: in  std_logic_vector(31 downto 0); --Señal de resultado adelantado por forwarding enviada al pipeline para dirigir a Memory Access
 			DataMAtoWB			: in  std_logic_vector(31 downto 0); 
 			EnablePDA_ID		: in  std_logic;
 			EnablePDA_EX		: in  std_logic;
@@ -332,6 +334,7 @@ architecture CPU_ARCHITECTURE of cpu is
 	SIGNAL StallSTRW:			std_logic;
 	SIGNAL DoneSTRW:			std_logic;
 	SIGNAL DataEXtoWB: 			std_logic_vector(31 downto 0);
+	SIGNAL DataEXtoRFw:			std_logic_vector(31 downto 0); --Señal usada para transportar el resultado obtenido del forwarding desde la parte de etapas al pipeline_registros
 	SIGNAL DataRegOutEXALU: 	std_logic_vector(31 downto 0);
 	SIGNAL DataRegOutEXFPU: 	std_logic_vector(31 downto 0);
 	SIGNAL EnableEX: 			std_logic;
@@ -401,6 +404,7 @@ begin
 			DataRegInEXALU			=> DataRegInEXALU,
 			DataRegInEXFPU			=> DataRegInEXFPU,
 			DataEXtoWB				=> DataEXtoWB,
+			DataEXtoRFw				=> DataEXtoRFw,
 			DataMAtoWB				=> DataMAtoWB,
 			DataRegInIF				=> DataRegInIF,
 			WbRegCheckWAW			=> WbRegCheckWAW,
@@ -472,6 +476,7 @@ begin
 			IDtoMA				=> IDtoMA,
 			IDtoWB				=> IDtoWB,
 			DataEXtoWB			=> DataEXtoWB,
+			DataEXtoRFw			=> DataEXtoRFw,
 			DataMAtoWB			=> DataMAtoWB,
 			EnablePDA_ID		=> EnablePDA_ID,
 			EnablePDA_EX		=> EnablePDA_EX,

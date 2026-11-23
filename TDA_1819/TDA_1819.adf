@@ -4,7 +4,7 @@ VCS=0
 version=4
 Current Config=compile
 [Configurations]
-compile=tda_1819
+compile=TDA_1819
 [Library]
 TDA_1819=.\TDA_1819\TDA_1819.lib
 [Settings]
@@ -32,6 +32,13 @@ RetvalMemorySize=32
 StackMemorySize=32
 resolution=1 ns
 VsimAdditionalOptions=
+PCBINTERFACE_STATUS=ERRORS
+IMPL_TOOL=
+SYNTH_TOOL=
+CSYNTH_TOOL=
+PHYSSYNTH_TOOL=
+FAMILY=
+FUNC_LIB=tda_1819
 [LocalVerilogSets]
 EnableSLP=1
 EnableDebug=0
@@ -57,7 +64,7 @@ UCF=
 [SpecTracer]
 WindowVisible=0
 [HierarchyViewer]
-HierarchyInformation=usuario|usuario_architecture|0
+HierarchyInformation=
 ShowHide=ShowTopLevel
 Selected=
 [Files]
@@ -222,6 +229,14 @@ Assembler/wb_str_waw10.asm=-1
 .\src\Assembler\wb_str_waw8.asm=External File
 .\src\Assembler\wb_str_waw9.asm=External File
 .\src\Assembler\wb_str_waw10.asm=External File
+[SIM.FUNC]
+FJD=FunctionalSimTask
+FST=-all
+OPTION=0
+TOPLEVEL=
+WAVEFORMS=
+DEFWAVE=1
+ADD_HIERARCHY_SIGNALS=0
 [Groups]
 Packages=1
 Usuario=1

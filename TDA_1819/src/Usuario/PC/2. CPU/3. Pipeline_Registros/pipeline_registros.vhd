@@ -70,7 +70,8 @@ entity pipeline_registros is
 		Fp				: in  std_logic;
 		IDtoMA			: in  memaccess_record;
 		IDtoWB			: in  writeback_record;
-		DataEXtoWB		: in  std_logic_vector(31 downto 0); 
+		DataEXtoWB		: in  std_logic_vector(31 downto 0);
+		DataEXtoRFw		: in  std_logic_vector(31 downto 0); --Señal de resultado adelantado por forwarding enviada al pipeline para dirigir a Memory Access
 		DataMAtoWB		: in  std_logic_vector(31 downto 0); 
 		EnablePDA_ID	: in  std_logic;
 		EnablePDA_EX	: in  std_logic;
@@ -88,6 +89,10 @@ architecture pipeline_registros_architecture of pipeline_registros is
 	SIGNAL PipeFP:		std_logic_vector(5 downto 0);
 	SIGNAL MARecords:	memaccess_records(1 downto 0);
 	SIGNAL MAFPRecords: memaccess_records(4 downto 0);
+	
+	-- Registro intermedio de forwarding para el resultado de EX hacia MA (inicializa con todo en 0)
+	SIGNAL RegFwdEXtoMA: std_logic_vector(31 downto 0) := (others => '0');
+	
 	SIGNAL WBRecords: 	writeback_records(2 downto 0);
 	SIGNAL WBFPRecords: writeback_records(5 downto 0);
 
