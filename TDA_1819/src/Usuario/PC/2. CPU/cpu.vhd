@@ -1,15 +1,15 @@
 
 -- Entidad "cpu":
--- Descripción: Éste es el diseño estructural de la CPU, por lo cual no posee ningún
--- proceso, ya que su funcionalidad se limita únicamente a interconectar los componentes
+-- Descripciï¿½n: ï¿½ste es el diseï¿½o estructural de la CPU, por lo cual no posee ningï¿½n
+-- proceso, ya que su funcionalidad se limita ï¿½nicamente a interconectar los componentes
 -- internos del procesador definido para este proyecto (interfaz de usuario, etapas de
--- segmentación, banco de registros internos para la segmentación, unidades detectoras 
+-- segmentaciï¿½n, banco de registros internos para la segmentaciï¿½n, unidades detectoras 
 -- de atascos, administrador de la CPU, reloj y banco de registros del procesador), 
 -- cada uno de ellos con sus respectivos puertos de entrada, salida y entrada/salida. 
--- También recibe del ensamblador de la PC la señal para comenzar a ejecutar el programa, 
--- se comunica con la memoria principal para leer o escribir sobre su sección de datos 
--- o leer sobre su sección de instrucciones y por último envía al banco de pruebas del 
--- usuario la señal de finalización de la ejecución del programa.
+-- Tambiï¿½n recibe del ensamblador de la PC la seï¿½al para comenzar a ejecutar el programa, 
+-- se comunica con la memoria principal para leer o escribir sobre su secciï¿½n de datos 
+-- o leer sobre su secciï¿½n de instrucciones y por ï¿½ltimo envï¿½a al banco de pruebas del 
+-- usuario la seï¿½al de finalizaciï¿½n de la ejecuciï¿½n del programa.
 
 
 library TDA_1819;
@@ -99,7 +99,7 @@ architecture CPU_ARCHITECTURE of cpu is
 			DataRegInEXALU			: out   std_logic_vector(31 downto 0);
 			DataRegInEXFPU			: out   std_logic_vector(31 downto 0);
 			DataEXtoWB				: out   std_logic_vector(31 downto 0);
-			DataEXtoRFw				: out 	std_logic_vector(31 downto 0); --Señal para enviar salida de la etapa execute al registro de Forwarding
+			DataEXtoRFw				: out 	std_logic_vector(31 downto 0); --Seï¿½al para enviar salida de la etapa execute al registro de Forwarding
 			DataMAtoWB				: out   std_logic_vector(31 downto 0);
 			DataRegInIF				: out   std_logic_vector(31 downto 0);
 			WbRegCheckWAW			: out 	writeback_record;
@@ -132,6 +132,7 @@ architecture CPU_ARCHITECTURE of cpu is
 			EnableDecWrPend			: out   std_logic;
 			EnableCpuToDataStackMem	: out   std_logic;
 			EnableCpuToInstMem		: out   std_logic;
+			IsStoreData				: out	std_logic; --SeÃ±al sale de la entidad de etapas que esta esta declarada en decode
 			IDtoEX					: inout execute_record;
 			IDtoWB					: inout writeback_record;
 			BranchEXALUtoSM			: inout state_branch;
@@ -174,7 +175,7 @@ architecture CPU_ARCHITECTURE of cpu is
 			IDtoMA				: in  memaccess_record;
 			IDtoWB				: in  writeback_record;
 			DataEXtoWB			: in  std_logic_vector(31 downto 0);
-			DataEXtoRFw			: in  std_logic_vector(31 downto 0); --Señal de resultado adelantado por forwarding enviada al pipeline para dirigir a Memory Access
+			DataEXtoRFw			: in  std_logic_vector(31 downto 0); --Seï¿½al de resultado adelantado por forwarding enviada al pipeline para dirigir a Memory Access
 			DataMAtoWB			: in  std_logic_vector(31 downto 0); 
 			EnablePDA_ID		: in  std_logic;
 			EnablePDA_EX		: in  std_logic;
@@ -208,6 +209,7 @@ architecture CPU_ARCHITECTURE of cpu is
 			EnableIncFPWrPend	: in    std_logic;
 			EnableCheckWAW		: in 	std_logic;
 			EnableDecWrPend		: in    std_logic;
+			IsStoreData			: in	std_logic; -- la seÃ±al entra en la etapa de atasco
 			EnableDecFPWrPend	: in	std_logic);	
 	end component;
 	
@@ -339,7 +341,7 @@ architecture CPU_ARCHITECTURE of cpu is
 	SIGNAL StallSTRW:			std_logic;
 	SIGNAL DoneSTRW:			std_logic;
 	SIGNAL DataEXtoWB: 			std_logic_vector(31 downto 0);
-	SIGNAL DataEXtoRFw:			std_logic_vector(31 downto 0); --Señal usada para transportar el resultado obtenido del forwarding desde la parte de etapas al pipeline_registros
+	SIGNAL DataEXtoRFw:			std_logic_vector(31 downto 0); --Seï¿½al usada para transportar el resultado obtenido del forwarding desde la parte de etapas al pipeline_registros
 	SIGNAL DataRegOutEXALU: 	std_logic_vector(31 downto 0);
 	SIGNAL DataRegOutEXFPU: 	std_logic_vector(31 downto 0);
 	SIGNAL EnableEX: 			std_logic;
@@ -360,7 +362,7 @@ architecture CPU_ARCHITECTURE of cpu is
 	SIGNAL StopEnd: 			std_logic;
 	SIGNAL CLK: 				std_logic;
 	SIGNAL CLK_HALF: 			std_logic;
-	
+	SIGNAL IsStoreData:			std_logic;
 
 begin
 	
@@ -468,7 +470,8 @@ begin
 			EnableID				=> EnableID,
 			EnableEX				=> EnableEX,
 			EnableMA				=> EnableMA,
-			EnableWB				=> EnableWB);
+			EnableWB				=> EnableWB,
+			IsStoreData				=> IsStoreData);
 
 	UUT3: pipeline_registros
 		generic map (
@@ -517,7 +520,8 @@ begin
 			EnableIncFPWrPend	=> EnableIncFPWrPend,
 			EnableCheckWAW		=> EnableCheckWAW,
 			EnableDecWrPend		=> EnableDecWrPend,
-			EnableDecFPWrPend	=> EnableDecFPWrPend);
+			EnableDecFPWrPend	=> EnableDecFPWrPend
+			IsStoreData			=> IsStoreData);
 		
 	UUT5: cpu_admin
 		generic map (

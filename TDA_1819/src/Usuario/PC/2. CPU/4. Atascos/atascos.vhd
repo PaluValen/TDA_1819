@@ -1,18 +1,18 @@
 
 -- Entidad "atascos":
--- Descripción: Éste es el diseño estructural del detector para cualquier tipo de
+-- Descripciï¿½n: ï¿½ste es el diseï¿½o estructural del detector para cualquier tipo de
 -- dependencias estructurales o de datos que puedan provocar atascos en el cauce del 
--- procesador. No posee ningún proceso, ya que su funcionalidad se limita
--- únicamente a interconectar sus componentes internos (detectores de dependencias
+-- procesador. No posee ningï¿½n proceso, ya que su funcionalidad se limita
+-- ï¿½nicamente a interconectar sus componentes internos (detectores de dependencias
 -- estructurales y de datos), cada uno de ellos con sus respectivos puertos de entrada,
--- salida y entrada/salida. También recibe del administrador para la etapa de ejecución 
--- de la segmentación del procesador la señal para realizar la comprobación de 
+-- salida y entrada/salida. Tambiï¿½n recibe del administrador para la etapa de ejecuciï¿½n 
+-- de la segmentaciï¿½n del procesador la seï¿½al para realizar la comprobaciï¿½n de 
 -- dependencias estructurales respecto a la memoria de datos; de la etapa "writeback"
--- la señal para verificar posibles dependencias de datos WAW (Escritura Después de 
--- Escritura); de la etapa "decode" la señal para comprobar dependencias de datos RAW 
--- (Lectura Después de Escritura); y, por último, del banco de registros internos 
--- intermedios la señal necesaria para analizar dependencias estructurales respecto a
--- la actualización del banco de registros de propósito general de la CPU.
+-- la seï¿½al para verificar posibles dependencias de datos WAW (Escritura Despuï¿½s de 
+-- Escritura); de la etapa "decode" la seï¿½al para comprobar dependencias de datos RAW 
+-- (Lectura Despuï¿½s de Escritura); y, por ï¿½ltimo, del banco de registros internos 
+-- intermedios la seï¿½al necesaria para analizar dependencias estructurales respecto a
+-- la actualizaciï¿½n del banco de registros de propï¿½sito general de la CPU.
 
 
 library TDA_1819;
@@ -61,6 +61,7 @@ entity atascos is
 		EnableIncFPWrPend	: in    std_logic;
 		EnableCheckWAW		: in 	std_logic;
 		EnableDecWrPend		: in    std_logic;
+		isStoreData			: in	std_logic; -- SeÃ±al que viajara hasta el detector de raw
 		EnableDecFPWrPend	: in	std_logic);
 
 end atascos;
@@ -106,6 +107,7 @@ architecture ATASCOS_ARCHITECTURE of atascos is
 			EnableIncFPWrPend	: in    std_logic;
 			EnableCheckWAW		: in 	std_logic;
 			EnableDecWrPend		: in    std_logic;
+			isStoreData			: in 	std_logic;	--Se declara la seÃ±al en el componente del detector de raw
 			EnableDecFPWrPend	: in	std_logic);
 	end component;
 	
@@ -155,6 +157,7 @@ begin
 			EnableIncFPWrPend	=> EnableIncFPWrPend,
 			EnableCheckWAW		=> EnableCheckWAW,
 			EnableDecWrPend		=> EnableDecWrPend,
+			IsStoreData			=> IsStoreData,			--Se conecta la seÃ±al al mapa del port
 			EnableDecFPWrPend	=> EnableDecFPWrPend);
 		
 	-- Add your stimulus here ...

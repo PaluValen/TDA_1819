@@ -1,15 +1,15 @@
 
 -- Entidad "etapas":
--- Descripción: Éste es el diseño estructural para las etapas de la segmentación de la CPU, 
--- por lo cual no posee ningún proceso, ya que su funcionalidad se limita únicamente a 
+-- Descripciï¿½n: ï¿½ste es el diseï¿½o estructural para las etapas de la segmentaciï¿½n de la CPU, 
+-- por lo cual no posee ningï¿½n proceso, ya que su funcionalidad se limita ï¿½nicamente a 
 -- interconectar los componentes internos del procesador definido para este proyecto, los
--- cuales en este caso corresponderían a cada una de las cinco etapas del pipeline: búsqueda
--- (fetch), decodificación (decode), ejecución (execute), acceso a memoria (memory access) y
+-- cuales en este caso corresponderï¿½an a cada una de las cinco etapas del pipeline: bï¿½squeda
+-- (fetch), decodificaciï¿½n (decode), ejecuciï¿½n (execute), acceso a memoria (memory access) y
 -- almacenamiento en registro (writeback), cada uno de ellos con sus respectivos puertos de 
--- entrada, salida y entrada/salida. Cada etapa recibe del administrador de la CPU una señal
--- de habilitación para su respectiva ejecución y cabe destacarse que tanto la etapa "fetch"
+-- entrada, salida y entrada/salida. Cada etapa recibe del administrador de la CPU una seï¿½al
+-- de habilitaciï¿½n para su respectiva ejecuciï¿½n y cabe destacarse que tanto la etapa "fetch"
 -- como la "memory access" acceden frecuentemente a la memoria de instrucciones y datos 
--- respectivamente mientras se ejecutan, mientras que un fenómeno similar ocurre en la etapa
+-- respectivamente mientras se ejecutan, mientras que un fenï¿½meno similar ocurre en la etapa
 -- "writeback" con respecto al banco de registros del procesador.
 
 
@@ -48,7 +48,7 @@ entity etapas is
 		DataRegInEXALU			: out 	std_logic_vector(31 downto 0);
 		DataRegInEXFPU			: out 	std_logic_vector(31 downto 0);
 		DataEXtoWB				: out   std_logic_vector(31 downto 0);
-		DataEXtoRFw				: out 	std_logic_vector(31 downto 0); --Señal para enviar salida de la etapa execute al registro de Forwarding
+		DataEXtoRFw				: out 	std_logic_vector(31 downto 0); --Seï¿½al para enviar salida de la etapa execute al registro de Forwarding
 		DataMAtoWB				: out   std_logic_vector(31 downto 0);
 		DataRegInIF				: out   std_logic_vector(31 downto 0);
 		WbRegCheckWAW			: out 	writeback_record;
@@ -81,6 +81,7 @@ entity etapas is
 		EnableDecWrPend			: out   std_logic;
 		EnableCpuToDataStackMem	: out   std_logic;
 		EnableCpuToInstMem		: out   std_logic;
+		IsStoreData				: out	std_logic; -- Se declara la seÃ±al en el componente del detector de raw
 		IDtoEX					: inout execute_record;
 		IDtoWB					: inout writeback_record;
 		BranchEXALUtoSM			: inout state_branch;
@@ -155,6 +156,7 @@ architecture ETAPAS_ARCHITECTURE of etapas is
 			EnableRegIDSP		: out   std_logic;
 			EnableIncWrPend		: out   std_logic;
 			EnableIncFPWrPend	: out   std_logic;
+			IsStoreData			: out	std_logic; --Se declara la seÃ±al en el componente del detector de raw
 			IDtoEX				: inout execute_record;
 			IDtoWB				: inout writeback_record;
 			StallBrEX			: inout std_logic;
@@ -180,7 +182,7 @@ architecture ETAPAS_ARCHITECTURE of etapas is
 			EnableRegEXALUIP	: out 	std_logic;
 			EnableDecFPWrPend	: out 	std_logic;
 			DataEXtoWB			: out 	std_logic_vector(31 downto 0);
-			DataEXtoRFw			: out 	std_logic_vector(31 downto 0); --Señal para enviar salida de la etapa execute al registro de Forwarding
+			DataEXtoRFw			: out 	std_logic_vector(31 downto 0); --Seï¿½al para enviar salida de la etapa execute al registro de Forwarding
 			EnableCheckSTRM		: out 	std_logic;
 			EXFPUPending		: out	std_logic;
 			EnableEXALU			: inout std_logic;
@@ -295,7 +297,8 @@ begin
 			EXFPUPending		=> EXFPUPending,
 			IFtoID				=> IFtoID,
 			DataRegOutID		=> DataRegOutID,
-			EnableID			=> EnableID);
+			EnableID			=> EnableID,
+			IsStoreData			=> IsStoreData);
 	
 	UUT3: execute
 		port map (
@@ -309,7 +312,7 @@ begin
 			EnableRegEXALUIP	=> EnableRegEXALUIP,
 			EnableDecFPWrPend	=> EnableDecFPWrPend,
 			DataEXtoWB			=> DataEXtoWB,
-			DataEXtoRFw			=> DataEXtoRFw, --MAPEO DE SEÑAL DE FORWARDING
+			DataEXtoRFw			=> DataEXtoRFw, --MAPEO DE SEï¿½AL DE FORWARDING
 			EnableCheckSTRM		=> EnableCheckSTRM,
 			EXFPUPending		=> EXFPUPending,
 			EnableEXALU			=> EnableEXALU,
