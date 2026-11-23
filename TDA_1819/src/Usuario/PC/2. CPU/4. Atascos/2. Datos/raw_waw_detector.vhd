@@ -1,101 +1,101 @@
 
 -- Entidad "raw_waw_detector":
--- Descripción: Aquí se define el detector para posibles atascos por dependencias
--- de datos, ya sea debido a que una instrucción necesita leer un dato del banco de registros
--- de propósito general antes de que otra anterior a ella haya logrado escribirlo en él (RAW, 
--- dependencia verdadera) o bien porque una instrucción requiere escribir un dato en uno de
--- los registros de próposito general antes de que otra anterior a ella haya podido escribir
--- su propio dato en él, por lo que dicho registro terminaría conteniendo el valor de la 
--- instrucción anterior en lugar de la actual (WAW, dependencia de salida). Por lo tanto, la
+-- Descripciï¿½n: Aquï¿½ se define el detector para posibles atascos por dependencias
+-- de datos, ya sea debido a que una instrucciï¿½n necesita leer un dato del banco de registros
+-- de propï¿½sito general antes de que otra anterior a ella haya logrado escribirlo en ï¿½l (RAW, 
+-- dependencia verdadera) o bien porque una instrucciï¿½n requiere escribir un dato en uno de
+-- los registros de prï¿½posito general antes de que otra anterior a ella haya podido escribir
+-- su propio dato en ï¿½l, por lo que dicho registro terminarï¿½a conteniendo el valor de la 
+-- instrucciï¿½n anterior en lugar de la actual (WAW, dependencia de salida). Por lo tanto, la
 -- tarea de este detector es analizar si efectivamente existen dichas dependencias a partir 
--- de información proporcionada por el administrador de la etapa de ejecución de la 
--- segmentación, la etapa "decode" (unidad de control de la CPU) y la etapa "writeback". En 
--- caso afirmativo, transmitirá la correspondiente señal a todas las etapas del pipeline que 
--- la necesiten para detener temporalmente su ejecución hasta que la dependencia sea 
+-- de informaciï¿½n proporcionada por el administrador de la etapa de ejecuciï¿½n de la 
+-- segmentaciï¿½n, la etapa "decode" (unidad de control de la CPU) y la etapa "writeback". En 
+-- caso afirmativo, transmitirï¿½ la correspondiente seï¿½al a todas las etapas del pipeline que 
+-- la necesiten para detener temporalmente su ejecuciï¿½n hasta que la dependencia sea 
 -- resuelta.
 -- Procesos:
--- Main: Puede realizar varias tareas simultáneamente, en función de la señal recibida y de
+-- Main: Puede realizar varias tareas simultï¿½neamente, en funciï¿½n de la seï¿½al recibida y de
 -- la etapa que la transmita:
--- "Decode": número de registro de propósito general pendiente de escribir en la etapa
--- "writeback" de la ejecución actual (este proceso incrementará la cantidad de escrituras
+-- "Decode": nï¿½mero de registro de propï¿½sito general pendiente de escribir en la etapa
+-- "writeback" de la ejecuciï¿½n actual (este proceso incrementarï¿½ la cantidad de escrituras
 -- pendientes para este registro); escritura pendiente en el registro FLAGS de la ALU especial
--- para punto flotante (este proceso incrementará la cantidad de escrituras pendientes para 
--- este registro) y/o número de registro de propósito general a leer en esta etapa cuyo valor
--- será utilizado en las etapas siguientes del pipeline (este proceso verificará si existen
--- escrituras pendientes en él, en caso afirmativo existirá una dependencia de datos de tipo
--- RAW, cuyo respectivo atasco deberá ser reportado a todas las etapas afectadas del pipeline
--- para que detengan su ejecución hasta que la dependencia se resuelva).
--- "Execute" (administrador de la etapa de ejecución): acción de escritura en el registro
--- FLAGS de la ALU especial para punto flotante (este proceso decrementará la cantidad de
+-- para punto flotante (este proceso incrementarï¿½ la cantidad de escrituras pendientes para 
+-- este registro) y/o nï¿½mero de registro de propï¿½sito general a leer en esta etapa cuyo valor
+-- serï¿½ utilizado en las etapas siguientes del pipeline (este proceso verificarï¿½ si existen
+-- escrituras pendientes en ï¿½l, en caso afirmativo existirï¿½ una dependencia de datos de tipo
+-- RAW, cuyo respectivo atasco deberï¿½ ser reportado a todas las etapas afectadas del pipeline
+-- para que detengan su ejecuciï¿½n hasta que la dependencia se resuelva).
+-- "Execute" (administrador de la etapa de ejecuciï¿½n): acciï¿½n de escritura en el registro
+-- FLAGS de la ALU especial para punto flotante (este proceso decrementarï¿½ la cantidad de
 -- escrituras pendientes para este registro y, en caso de existir un atasco RAW debido a un
--- conflicto por este registro y sólo en caso de corresponder hacerlo, determinará la 
--- finalización de dicho atasco para que todas las etapas del pipeline afectadas puedan
--- reanudar su ejecución).
--- "Writeback": número de registro de propósito general a escribir en esta etapa. En primer
--- lugar, este proceso verifica si existen escrituras pendientes en él por parte de 
--- instrucciones anteriores, en caso afirmativo existirá una dependencia de datos de tipo WAW, 
--- cuyo respectivo atasco deberá ser reportado a todas las etapas afectadas del pipeline para 
--- que detengan su ejecución hasta que la dependencia sea resuelta. Luego, si no fue detectada
--- ninguna dependencia, decrementará la cantidad de escrituras pendientes para dicho registro
--- y, en caso de existir un atasco RAW y/o WAW debido a un conflicto por este registro y sólo
--- en caso de corresponder hacerlo, determinará la finalización de dicho atasco para que 
--- todas las etapas del pipeline afectadas puedan reanudar su ejecución.
--- SetStallWAWAux: Este proceso se ejecuta únicamente cuando se detecta una dependencia de 
--- datos de tipo WAW y activa una señal auxiliar que permanecerá en este estado hasta que el
--- atasco se resuelva. Esta señal es necesaria para notificar a todas las etapas del pipeline
--- afectadas a fin de que detengan temporalmente su ejecución. En cambio, la señal de atasco
--- WAW original solamente permanecerá activa el tiempo necesario para cancelar la ejecución
--- de la etapa "writeback" de la instrucción responsable de provocar dicho atasco.
+-- conflicto por este registro y sï¿½lo en caso de corresponder hacerlo, determinarï¿½ la 
+-- finalizaciï¿½n de dicho atasco para que todas las etapas del pipeline afectadas puedan
+-- reanudar su ejecuciï¿½n).
+-- "Writeback": nï¿½mero de registro de propï¿½sito general a escribir en esta etapa. En primer
+-- lugar, este proceso verifica si existen escrituras pendientes en ï¿½l por parte de 
+-- instrucciones anteriores, en caso afirmativo existirï¿½ una dependencia de datos de tipo WAW, 
+-- cuyo respectivo atasco deberï¿½ ser reportado a todas las etapas afectadas del pipeline para 
+-- que detengan su ejecuciï¿½n hasta que la dependencia sea resuelta. Luego, si no fue detectada
+-- ninguna dependencia, decrementarï¿½ la cantidad de escrituras pendientes para dicho registro
+-- y, en caso de existir un atasco RAW y/o WAW debido a un conflicto por este registro y sï¿½lo
+-- en caso de corresponder hacerlo, determinarï¿½ la finalizaciï¿½n de dicho atasco para que 
+-- todas las etapas del pipeline afectadas puedan reanudar su ejecuciï¿½n.
+-- SetStallWAWAux: Este proceso se ejecuta ï¿½nicamente cuando se detecta una dependencia de 
+-- datos de tipo WAW y activa una seï¿½al auxiliar que permanecerï¿½ en este estado hasta que el
+-- atasco se resuelva. Esta seï¿½al es necesaria para notificar a todas las etapas del pipeline
+-- afectadas a fin de que detengan temporalmente su ejecuciï¿½n. En cambio, la seï¿½al de atasco
+-- WAW original solamente permanecerï¿½ activa el tiempo necesario para cancelar la ejecuciï¿½n
+-- de la etapa "writeback" de la instrucciï¿½n responsable de provocar dicho atasco.
 -- Procedimientos y funciones: 
--- InitializeWbRegWAW(): En caso de producirse un atasco de tipo WAW, la ejecución actual de
--- la etapa "writeback" deberá ser cancelada, por lo cual toda la información utilizada por
--- ella para cumplir su tarea (número de registro a escribir, tamaño y fuente del dato, el 
--- valor propiamente dicho, etc.) debería ser preservada en una señal auxiliar para que
+-- InitializeWbRegWAW(): En caso de producirse un atasco de tipo WAW, la ejecuciï¿½n actual de
+-- la etapa "writeback" deberï¿½ ser cancelada, por lo cual toda la informaciï¿½n utilizada por
+-- ella para cumplir su tarea (nï¿½mero de registro a escribir, tamaï¿½o y fuente del dato, el 
+-- valor propiamente dicho, etc.) deberï¿½a ser preservada en una seï¿½al auxiliar para que
 -- no se pierda cuando dicha etapa vuelva a ser ejecutada para completar la siguiente 
--- instrucción, ya que la información deberá ser necesaria para el momento en el cual la
--- dependencia se resuelva y la ejecución cancelada deba repetirse, esta vez sin 
--- interrupciones hasta el final. Este detector incluye la mencionada señal auxiliar como una 
--- señal interna para transmitir su contenido a la etapa "writeback" cuando sea necesario. Por
--- su parte, este procedimiento se encarga de inicializar esta señal con valores nulos a la
--- espera de que ocurra un atasco WAW que la cargue con datos válidos provenientes de la etapa
--- "writeback" cuya ejecución debió ser cancelada.
--- CheckRAW(): Verifica si el registro a leer a continuación por la instrucción actual en la 
--- etapa "decode" todavía posee en este momento escrituras pendientes por parte de instrucciones 
--- anteriores. En caso afirmativo, informará la existencia de una dependencia de datos de tipo 
--- RAW a todas las etapas del pipeline afectadas para que detengan temporalmente su ejecución 
+-- instrucciï¿½n, ya que la informaciï¿½n deberï¿½ ser necesaria para el momento en el cual la
+-- dependencia se resuelva y la ejecuciï¿½n cancelada deba repetirse, esta vez sin 
+-- interrupciones hasta el final. Este detector incluye la mencionada seï¿½al auxiliar como una 
+-- seï¿½al interna para transmitir su contenido a la etapa "writeback" cuando sea necesario. Por
+-- su parte, este procedimiento se encarga de inicializar esta seï¿½al con valores nulos a la
+-- espera de que ocurra un atasco WAW que la cargue con datos vï¿½lidos provenientes de la etapa
+-- "writeback" cuya ejecuciï¿½n debiï¿½ ser cancelada.
+-- CheckRAW(): Verifica si el registro a leer a continuaciï¿½n por la instrucciï¿½n actual en la 
+-- etapa "decode" todavï¿½a posee en este momento escrituras pendientes por parte de instrucciones 
+-- anteriores. En caso afirmativo, informarï¿½ la existencia de una dependencia de datos de tipo 
+-- RAW a todas las etapas del pipeline afectadas para que detengan temporalmente su ejecuciï¿½n 
 -- hasta que el atasco sea resuelto.
 -- IncWrPending(): Incrementa en uno la cantidad de escrituras pendientes para el registro de 
--- propósito general de la CPU que será actualizado próximamente durante la ejecución de la 
--- etapa "writeback" de la instrucción actual. El número del registro a escribir es obtenido
--- a partir de información recibida de la etapa "decode".
+-- propï¿½sito general de la CPU que serï¿½ actualizado prï¿½ximamente durante la ejecuciï¿½n de la 
+-- etapa "writeback" de la instrucciï¿½n actual. El nï¿½mero del registro a escribir es obtenido
+-- a partir de informaciï¿½n recibida de la etapa "decode".
 -- IncFPWrPending(): Incrementa en uno la cantidad de escrituras pendientes para el registro
--- FLAGS correspondiente a la ALU especial para punto flotante, el cual será actualizado
--- próximamente durante el último ciclo de reloj de la ejecución de la etapa "execute" de la
--- instrucción actual.
--- CheckWAW(): Verifica si el próximo registro a actualizar por la instrucción actual en la
--- etapa "writeback" todavía posee en este momento escrituras pendientes por parte de
--- instrucciones anteriores. En caso afirmativo, informará la existencia de una dependencia de
+-- FLAGS correspondiente a la ALU especial para punto flotante, el cual serï¿½ actualizado
+-- prï¿½ximamente durante el ï¿½ltimo ciclo de reloj de la ejecuciï¿½n de la etapa "execute" de la
+-- instrucciï¿½n actual.
+-- CheckWAW(): Verifica si el prï¿½ximo registro a actualizar por la instrucciï¿½n actual en la
+-- etapa "writeback" todavï¿½a posee en este momento escrituras pendientes por parte de
+-- instrucciones anteriores. En caso afirmativo, informarï¿½ la existencia de una dependencia de
 -- datos de tipo WAW a todas las etapas del pipeline afectadas para que detengan temporalmente
--- su ejecución hasta que el atasco sea resuelto.
+-- su ejecuciï¿½n hasta que el atasco sea resuelto.
 -- DecWrPending(): Decrementa en uno la cantidad de escrituras pendientes para el registro de
--- propósito general de la CPU que será actualizado a continuación durante la ejecución de
--- la etapa "writeback" de la instrucción actual. El número del registro a escribir es 
--- obtenido a partir de información recibida de la etapa "writeback". Este proceso también
--- verifica la existencia de dependencias RAW y/o WAW detectadas previamente y aún no 
+-- propï¿½sito general de la CPU que serï¿½ actualizado a continuaciï¿½n durante la ejecuciï¿½n de
+-- la etapa "writeback" de la instrucciï¿½n actual. El nï¿½mero del registro a escribir es 
+-- obtenido a partir de informaciï¿½n recibida de la etapa "writeback". Este proceso tambiï¿½n
+-- verifica la existencia de dependencias RAW y/o WAW detectadas previamente y aï¿½n no 
 -- resueltas y, en caso afirmativo, si el registro en conflicto llegara a ser precisamente el 
--- mismo que será escrito en este ciclo de reloj y sólo si no hubiera otras escrituras 
--- pendientes para el mismo por parte de instrucciones anteriores a aquélla que provocó el 
--- atasco, determinará la finalización de este último para que todas las etapas del pipeline 
--- afectadas puedan reanudar su ejecución.
+-- mismo que serï¿½ escrito en este ciclo de reloj y sï¿½lo si no hubiera otras escrituras 
+-- pendientes para el mismo por parte de instrucciones anteriores a aquï¿½lla que provocï¿½ el 
+-- atasco, determinarï¿½ la finalizaciï¿½n de este ï¿½ltimo para que todas las etapas del pipeline 
+-- afectadas puedan reanudar su ejecuciï¿½n.
 -- DecFPWrPending(): Decrementa en uno la cantidad de escrituras pendientes para el registro
--- FLAGS correspondiente a la ALU especial para punto flotante, el cual será actualizado 
--- a continuación durante el último ciclo de reloj de la ejecución de la etapa "execute" de la
--- instrucción actual. Este proceso también verifica la existencia de dependencias RAW 
--- detectadas previamente y aún no resueltas y, en caso afirmativo, si el registro en 
--- conflicto llegara a ser precisamente este registro FLAGS en particular y sólo si no hubiera
--- otras escrituras pendientes para el mismo por parte de instrucciones anteriores a aquélla
--- que provocó el atasco, determinará la finalización de este último para que todas las etapas
--- del pipeline afectadas puedan reanudar su ejecución.
+-- FLAGS correspondiente a la ALU especial para punto flotante, el cual serï¿½ actualizado 
+-- a continuaciï¿½n durante el ï¿½ltimo ciclo de reloj de la ejecuciï¿½n de la etapa "execute" de la
+-- instrucciï¿½n actual. Este proceso tambiï¿½n verifica la existencia de dependencias RAW 
+-- detectadas previamente y aï¿½n no resueltas y, en caso afirmativo, si el registro en 
+-- conflicto llegara a ser precisamente este registro FLAGS en particular y sï¿½lo si no hubiera
+-- otras escrituras pendientes para el mismo por parte de instrucciones anteriores a aquï¿½lla
+-- que provocï¿½ el atasco, determinarï¿½ la finalizaciï¿½n de este ï¿½ltimo para que todas las etapas
+-- del pipeline afectadas puedan reanudar su ejecuciï¿½n.
 
 
 library TDA_1819; 
@@ -134,7 +134,8 @@ entity raw_waw_detector is
 		EnableIncFPWrPend	: in    std_logic;
 		EnableCheckWAW		: in 	std_logic;
 		EnableDecWrPend		: in    std_logic;
-		EnableDecFPWrPend	: in	std_logic);
+		EnableDecFPWrPend	: in	std_logic;
+		IsStoreData			: in	std_logic); -- SeÃ±al para que se distinga si se lee el dato a guardar o la direccion base
 
 end raw_waw_detector;
 
@@ -213,8 +214,12 @@ begin
 	END InitializeWbRegWAW;
 	
 	PROCEDURE CheckRAW IS
-	
 	BEGIN
+	\-- Si Forwarding estÃ¡ activo Y es el dato de un store (Escenario 4B): 
+	-- NO disparamos StallRAW porque se adelantarÃ¡ en MEM 
+	if (Forwarding and IsStoreData = '1') then 
+		null;
+	else 
 		CASE to_integer(unsigned(IdRegID)) IS
 			WHEN ID_R0 =>
 				if (R0_WrPending > 0) then
