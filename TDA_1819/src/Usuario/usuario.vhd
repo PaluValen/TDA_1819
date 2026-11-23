@@ -41,7 +41,8 @@ entity usuario is
 	generic (
 		ProgName	: STRING := "nop_0.asm";
 		Pipelining	: BOOLEAN := true;
-		Cores 		: INTEGER := 1);  	
+		Cores 		: INTEGER := 1;
+		Forwarding  : BOOLEAN := false);  	
 			
 end usuario;
 
@@ -52,7 +53,8 @@ architecture USUARIO_ARCHITECTURE of usuario is
 		generic (
 			ProgName		: STRING;
 			Pipelining 		: BOOLEAN;
-			Cores 			: INTEGER);
+			Cores 			: INTEGER;
+			Forwarding		: BOOLEAN);
 		port (
 			DoneCompUser	: out std_logic;
 			DoneCpuUser		: out std_logic;
