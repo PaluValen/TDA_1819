@@ -47,6 +47,7 @@
 library TDA_1819;			 
 use TDA_1819.const_cpu.all;
 use TDA_1819.tipos_cpu.all;
+use TDA_1819.const_buses.all; --añadido para poder leer los campos de los registros de MA
 
 
 
@@ -202,6 +203,13 @@ begin
 			RecInMA <= MAFPRecords(0);
 		elsif (PipeNO(1) = '1') then
 			RecInMA <= MARecords(0);
+			if Forwarding then
+    			if ((MARecords(0).mode = std_logic_vector(to_unsigned(MEM_MEM, MARecords(0).mode'length))) and
+        		(MARecords(0).control(READ_WRITE_POS) = WRITE_MEM)) then
+      				RecInMA.source <= std_logic_vector(to_unsigned(MEM_EX, RecInMA.source'length));
+      				RecInMA.data.execute <= RegFwdEXtoMA;
+				end if;
+    end if;
 		else
 			RecInMA.mode <= std_logic_vector(to_unsigned(MEM_NULL, RecInMA.mode'length));
 			--report "Error al cargar los datos para ejecutar la etapa de acceso a memoria"
