@@ -1,35 +1,35 @@
 
 -- Entidad "decode":
--- Descripción: Aquí se define la etapa de decodificación de la segmentación del 
--- procesador: obtiene del Registro de Instrucción (IR) el código de operación de la
--- instrucción a ejecutar, lo interpreta y en función del resultado procederá a
--- obtener la información sobre los operandos a partir de las señales recibidas de la
--- etapa de búsqueda. Luego, en caso de ser necesario, utilizará dicha información 
--- para acceder al banco de registros de la CPU y leer de él los operandos propiamente
--- dichos de la instrucción a fin de asignarlos a las etapas que los necesiten para
--- trabajar con ellos. Por ejemplo, si se trata de una instrucción aritmético/lógica
--- la etapa "execute" necesitará algunos de ellos para realizar	la respectiva
--- operación, mientras que la etapa "writeback" deberá conocer en qué registro se
--- guardará el resultado; en cambio, si es una instrucción de almacenamiento en 
--- memoria, la etapa "memory access" tendrá que saber qué dato debe ser guardado y a
--- partir de qué dirección de la memoria de datos necesitará hacerlo. Además, la etapa
--- "decode" ofrece información adicional obtenida directamente a partir del código de 
--- operación que las siguientes etapas del pipeline también necesitarán para ser 
--- llevadas a cabo: el tipo de operación a realizar, el tipo y tamaño de los operandos, 
+-- Descripciï¿½n: Aquï¿½ se define la etapa de decodificaciï¿½n de la segmentaciï¿½n del 
+-- procesador: obtiene del Registro de Instrucciï¿½n (IR) el cï¿½digo de operaciï¿½n de la
+-- instrucciï¿½n a ejecutar, lo interpreta y en funciï¿½n del resultado procederï¿½ a
+-- obtener la informaciï¿½n sobre los operandos a partir de las seï¿½ales recibidas de la
+-- etapa de bï¿½squeda. Luego, en caso de ser necesario, utilizarï¿½ dicha informaciï¿½n 
+-- para acceder al banco de registros de la CPU y leer de ï¿½l los operandos propiamente
+-- dichos de la instrucciï¿½n a fin de asignarlos a las etapas que los necesiten para
+-- trabajar con ellos. Por ejemplo, si se trata de una instrucciï¿½n aritmï¿½tico/lï¿½gica
+-- la etapa "execute" necesitarï¿½ algunos de ellos para realizar	la respectiva
+-- operaciï¿½n, mientras que la etapa "writeback" deberï¿½ conocer en quï¿½ registro se
+-- guardarï¿½ el resultado; en cambio, si es una instrucciï¿½n de almacenamiento en 
+-- memoria, la etapa "memory access" tendrï¿½ que saber quï¿½ dato debe ser guardado y a
+-- partir de quï¿½ direcciï¿½n de la memoria de datos necesitarï¿½ hacerlo. Ademï¿½s, la etapa
+-- "decode" ofrece informaciï¿½n adicional obtenida directamente a partir del cï¿½digo de 
+-- operaciï¿½n que las siguientes etapas del pipeline tambiï¿½n necesitarï¿½n para ser 
+-- llevadas a cabo: el tipo de operaciï¿½n a realizar, el tipo y tamaï¿½o de los operandos, 
 -- etc.
 -- Procesos:
--- Main: En primer lugar, recibe la señal del administrador de la CPU para comenzar la
--- etapa de decodificación de una nueva instrucción. Luego, en la primera mitad del ciclo de
--- reloj comprueba si existen actualmente atascos de algún tipo en el cauce, deteniendo
--- temporalmente la ejecución en caso afirmativo. También obtiene del registro IR el código
--- de operación de la operación a ejecutar. Finalmente, en la segunda mitad del ciclo 
--- decodifica dicho código, accede en caso de ser necesario al banco de registros para obtener
--- los operandos y configura y envía toda la información requerida para que el resto de las 
+-- Main: En primer lugar, recibe la seï¿½al del administrador de la CPU para comenzar la
+-- etapa de decodificaciï¿½n de una nueva instrucciï¿½n. Luego, en la primera mitad del ciclo de
+-- reloj comprueba si existen actualmente atascos de algï¿½n tipo en el cauce, deteniendo
+-- temporalmente la ejecuciï¿½n en caso afirmativo. Tambiï¿½n obtiene del registro IR el cï¿½digo
+-- de operaciï¿½n de la operaciï¿½n a ejecutar. Finalmente, en la segunda mitad del ciclo 
+-- decodifica dicho cï¿½digo, accede en caso de ser necesario al banco de registros para obtener
+-- los operandos y configura y envï¿½a toda la informaciï¿½n requerida para que el resto de las 
 -- etapas del pipeline puedan realizar su trabajo sin inconvenientes.
 -- Procedimientos y funciones:
--- Initialize(): Configura y carga toda la información inicial para las siguientes etapas
--- del pipeline, antes de que la misma sea modificada durante la decodificación de la 
--- instrucción: operaciones nulas, operandos y direcciones vacías, etc.
+-- Initialize(): Configura y carga toda la informaciï¿½n inicial para las siguientes etapas
+-- del pipeline, antes de que la misma sea modificada durante la decodificaciï¿½n de la 
+-- instrucciï¿½n: operaciones nulas, operandos y direcciones vacï¿½as, etc.
 
 
 library TDA_1819;
@@ -52,7 +52,8 @@ use std.TEXTIO.all;
 entity decode is  
 	
 	generic (
-		Pipelining	: BOOLEAN);
+		Pipelining	: BOOLEAN;
+		Forwarding	: BOOLEAN);
 
     port (
 		StallHLT			: out	std_logic;
@@ -70,6 +71,7 @@ entity decode is
 		EnableRegIDSP		: out   std_logic;
 		EnableIncWrPend		: out   std_logic;
 		EnableIncFPWrPend 	: out	std_logic;
+		IsStoreData			: out	std_logic;
 		IDtoEX				: inout execute_record;
 		IDtoWB				: inout writeback_record;
 		StallBrEX			: inout std_logic;
@@ -149,11 +151,13 @@ begin
 			EnableIncFPWrPend <= '0';
 			DoneID <= '0';
 			StopInit <= '0';
+			IsStoreData <= '0'; --por defecto para que ninguna otra instrucciÃ³n desactive los atascos sin querer
 			Initialize(idAux);
 			WAIT FOR 1 ns;
 		end if;	
 		WAIT UNTIL rising_edge(EnableID);
 		idAux := idAux + 1;
+		IsStoreData <= '0'; --Cada vez que llega una nueva instrucciÃ³n y arranca la decodificaciÃ³n, se asegura que arranque en `'0'` para que ninguna instrucciÃ³n previa la deje pegada en `'1'`
 		if ((StallRAW = '0') and (StallBrID = '0') and (StallBrEX = '0') and (StallSTR = '0') and (StallWAWAux = '0')) then
 			IFtoIDLocal <= IFtoID;
 		elsif (StallRAW = '1') then
@@ -348,13 +352,27 @@ begin
 				IDtoMA.control <= WRITE_DATA_MEM;
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(1, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
+				-- Condicion del forwarding
+				-- SELECCIÃ“N DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
+				-- Si el Forwarding estÃ¡ habilitado, se configura 'source' en MEM_EX para que 
+				-- el multiplexor de 'memory\_access.vhd' tome el resultado reciÃ©n calculado 
+				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leÃ­do en ID. 
+				-- Si Forwarding estÃ¡ deshabilitado, mantiene el camino original (MEM_ID).
+				if (Forwarding) then 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
+				else 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
+				end if;
+
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(1, SizeRegID'length));
+				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar
 				EnableRegID <= '1';
 				WAIT FOR 1 ns;
 				EnableRegID <= '0';
 				WAIT FOR 1 ns;
+				IsStoreData <= '0'; -- Aca se vuelve a poner en 0 para apagarlo
 				IDtoMA.data.decode(7 downto 0) <= DataRegOutID(7 downto 0);
 				if (StallRAW = '0') then
 					addrAux := to_integer(unsigned(IFtoIDLocal.package1(23 downto 8)));
@@ -392,13 +410,28 @@ begin
 				IDtoMA.mode <= std_logic_vector(to_unsigned(MEM_MEM, IDtoMA.mode'length));
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(2, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
+				-- Condicion del forwarding
+				-- Condicion del forwarding
+				-- SELECCIÃ“N DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
+				-- Si el Forwarding estÃ¡ habilitado, se configura 'source' en MEM_EX para que 
+				-- el multiplexor de 'memory\_access.vhd' tome el resultado reciÃ©n calculado 
+				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leÃ­do en ID. 
+				-- Si Forwarding estÃ¡ deshabilitado, mantiene el camino original (MEM_ID).
+				if (Forwarding) then 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
+				else 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM\_ID, IDtoMA.source'length)); 
+				end if;
+
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(2, SizeRegID'length));
+				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar
 				EnableRegID <= '1';
 				WAIT FOR 1 ns;
 				EnableRegID <= '0';
 				WAIT FOR 1 ns;
+				IsStoreData <= '0'; -- Aca se vuelve a poner en 0 para apagarlo
 				IDtoMA.data.decode(15 downto 0) <= DataRegOutID(15 downto 0);
 				if (StallRAW = '0') then
 					addrAux := to_integer(unsigned(IFtoIDLocal.package1(23 downto 8)));
@@ -438,13 +471,28 @@ begin
 				IDtoMA.control <= WRITE_DATA_MEM;
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(4, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
+				-- Condicion del forwarding
+				-- Condicion del forwarding
+				-- SELECCIÃ“N DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
+				-- Si el Forwarding estÃ¡ habilitado, se configura 'source' en MEM_EX para que 
+				-- el multiplexor de 'memory\_access.vhd' tome el resultado reciÃ©n calculado 
+				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leÃ­do en ID. 
+				-- Si Forwarding estÃ¡ deshabilitado, mantiene el camino original (MEM_ID).
+				if (Forwarding) then 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
+				else 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM\_ID, IDtoMA.source'length)); 
+				end if;
+
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(4, SizeRegID'length));
+				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar
 				EnableRegID <= '1';
 				WAIT FOR 1 ns;
 				EnableRegID <= '0';
 				WAIT FOR 1 ns;
+				IsStoreData <= '0'; -- Aca se vuelve a poner en 0 para apagarlo
 				IDtoMA.data.decode(31 downto 0) <= DataRegOutID(31 downto 0); 
 				if (StallRAW = '0') then
 					addrAux := to_integer(unsigned(IFtoIDLocal.package1(23 downto 8)));
@@ -479,13 +527,27 @@ begin
 				IDtoMA.control <= WRITE_DATA_MEM;
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(4, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
+				-- Condicion del forwarding
+				-- SELECCIÃ“N DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
+				-- Si el Forwarding estÃ¡ habilitado, se configura 'source' en MEM_EX para que 
+				-- el multiplexor de 'memory\_access.vhd' tome el resultado reciÃ©n calculado 
+				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leÃ­do en ID. 
+				-- Si Forwarding estÃ¡ deshabilitado, mantiene el camino original (MEM_ID).
+				if (Forwarding) then 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
+				else 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM\_ID, IDtoMA.source'length)); 
+				end if;
+				
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(4, SizeRegID'length));
+				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar
 				EnableRegID <= '1';
 				WAIT FOR 1 ns;
 				EnableRegID <= '0';
 				WAIT FOR 1 ns;
+				IsStoreData <= '0'; -- Aca se vuelve a poner en 0 para apagarlo
 				IDtoMA.data.decode(31 downto 0) <= DataRegOutID(31 downto 0); 
 				if (StallRAW = '0') then
 					addrAux := to_integer(unsigned(IFtoIDLocal.package1(23 downto 8)));
@@ -1640,7 +1702,7 @@ begin
 				end if;
 				StopInit <= '1';
 			WHEN OTHERS =>
-				report "Error: el código de operación de la instrucción no es válido"
+				report "Error: el cï¿½digo de operaciï¿½n de la instrucciï¿½n no es vï¿½lido"
 				severity FAILURE;
 		END CASE;
 		IFtoIDAnt <= IFtoIDLocal;
