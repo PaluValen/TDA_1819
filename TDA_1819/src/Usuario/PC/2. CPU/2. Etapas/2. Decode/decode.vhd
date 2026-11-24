@@ -424,7 +424,7 @@ begin
 				if (Forwarding) then 
 					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
 				else 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM\_ID, IDtoMA.source'length)); 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
 				end if;
 
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
@@ -485,7 +485,7 @@ begin
 				if (Forwarding) then 
 					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
 				else 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM\_ID, IDtoMA.source'length)); 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
 				end if;
 
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
@@ -540,7 +540,7 @@ begin
 				if (Forwarding) then 
 					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
 				else 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM\_ID, IDtoMA.source'length)); 
+					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
 				end if;
 				
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
