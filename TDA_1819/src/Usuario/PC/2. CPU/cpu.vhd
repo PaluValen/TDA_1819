@@ -520,7 +520,7 @@ begin
 			EnableIncFPWrPend	=> EnableIncFPWrPend,
 			EnableCheckWAW		=> EnableCheckWAW,
 			EnableDecWrPend		=> EnableDecWrPend,
-			EnableDecFPWrPend	=> EnableDecFPWrPend
+			EnableDecFPWrPend	=> EnableDecFPWrPend,
 			IsStoreData			=> IsStoreData);
 		
 	UUT5: cpu_admin

@@ -215,9 +215,9 @@ begin
 	
 	PROCEDURE CheckRAW IS
 	BEGIN
-	\-- Si Forwarding está activo Y es el dato de un store (Escenario 4B): 
+	-- Si Forwarding está activo Y es el dato de un store (Escenario 4B): 
 	-- NO disparamos StallRAW porque se adelantará en MEM 
-	if (Forwarding and IsStoreData = '1') then 
+	if (Forwarding) then 
 		null;
 	else 
 		CASE to_integer(unsigned(IdRegID)) IS
@@ -401,6 +401,7 @@ begin
 			WHEN OTHERS =>
 				NULL;
 		END CASE;
+	end if;
 	END CheckRAW;
 	
 	PROCEDURE IncWrPending IS

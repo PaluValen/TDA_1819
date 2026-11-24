@@ -70,6 +70,7 @@ entity decode is
 		EnableRegIDSP		: out   std_logic;
 		EnableIncWrPend		: out   std_logic;
 		EnableIncFPWrPend 	: out	std_logic;
+		IsStoreData			: out	std_logic; -- Se declara la señal en el componente del detector de raw
 		IDtoEX				: inout execute_record;
 		IDtoWB				: inout writeback_record;
 		StallBrEX			: inout std_logic;

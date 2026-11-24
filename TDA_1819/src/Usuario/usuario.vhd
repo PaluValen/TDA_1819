@@ -39,7 +39,7 @@ use std.TEXTIO.all;
 entity usuario is
 	-- Generic declarations of the tested unit
 	generic (
-		ProgName	: STRING := "nop_0.asm";
+		ProgName	: STRING := "testF.asm";
 		Pipelining	: BOOLEAN := true;
 		Cores 		: INTEGER := 1;
 		Forwarding  : BOOLEAN := false);  	
@@ -78,7 +78,8 @@ begin
 		generic map (
 			ProgName 		=> ProgName,
 			Pipelining 		=> Pipelining,
-			Cores 			=> Cores
+			Cores 			=> Cores,
+			Forwarding      => Forwarding
 		)
 		port map ( 
 			DoneCompUser 	=> DoneCompUser,
