@@ -52,8 +52,7 @@ use std.TEXTIO.all;
 entity decode is  
 	
 	generic (
-		Pipelining	: BOOLEAN;
-		Forwarding	: BOOLEAN);
+		Pipelining	: BOOLEAN);
 
     port (
 		StallHLT			: out	std_logic;
@@ -71,11 +70,7 @@ entity decode is
 		EnableRegIDSP		: out   std_logic;
 		EnableIncWrPend		: out   std_logic;
 		EnableIncFPWrPend 	: out	std_logic;
-<<<<<<< HEAD
-		IsStoreData			: out	std_logic;
-=======
 		IsStoreData			: out	std_logic; -- Se declara la señal en el componente del detector de raw
->>>>>>> b9776d4e672a52f804c4ef77bffe4bc6a9d75404
 		IDtoEX				: inout execute_record;
 		IDtoWB				: inout writeback_record;
 		StallBrEX			: inout std_logic;
@@ -356,17 +351,6 @@ begin
 				IDtoMA.control <= WRITE_DATA_MEM;
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(1, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
-				-- Condicion del forwarding
-				-- SELECCIÓN DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
-				-- Si el Forwarding está habilitado, se configura 'source' en MEM_EX para que 
-				-- el multiplexor de 'memory\_access.vhd' tome el resultado recién calculado 
-				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leído en ID. 
-				-- Si Forwarding está deshabilitado, mantiene el camino original (MEM_ID).
-				if (Forwarding) then 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
-				else 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
-				end if;
 
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
@@ -414,18 +398,6 @@ begin
 				IDtoMA.mode <= std_logic_vector(to_unsigned(MEM_MEM, IDtoMA.mode'length));
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(2, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
-				-- Condicion del forwarding
-				-- Condicion del forwarding
-				-- SELECCIÓN DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
-				-- Si el Forwarding está habilitado, se configura 'source' en MEM_EX para que 
-				-- el multiplexor de 'memory\_access.vhd' tome el resultado recién calculado 
-				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leído en ID. 
-				-- Si Forwarding está deshabilitado, mantiene el camino original (MEM_ID).
-				if (Forwarding) then 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
-				else 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
-				end if;
 
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
@@ -475,18 +447,6 @@ begin
 				IDtoMA.control <= WRITE_DATA_MEM;
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(4, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
-				-- Condicion del forwarding
-				-- Condicion del forwarding
-				-- SELECCIÓN DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
-				-- Si el Forwarding está habilitado, se configura 'source' en MEM_EX para que 
-				-- el multiplexor de 'memory\_access.vhd' tome el resultado recién calculado 
-				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leído en ID. 
-				-- Si Forwarding está deshabilitado, mantiene el camino original (MEM_ID).
-				if (Forwarding) then 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
-				else 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
-				end if;
 
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
@@ -531,17 +491,6 @@ begin
 				IDtoMA.control <= WRITE_DATA_MEM;
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(4, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
-				-- Condicion del forwarding
-				-- SELECCIÓN DE FUENTE DE DATOS PARA LA ETAPA MEMORY ACCESS: (Para el caso del 4B) 
-				-- Si el Forwarding está habilitado, se configura 'source' en MEM_EX para que 
-				-- el multiplexor de 'memory\_access.vhd' tome el resultado recién calculado 
-				-- por la ALU (RecInMA.data.execute) en lugar del valor obsoleto leído en ID. 
-				-- Si Forwarding está deshabilitado, mantiene el camino original (MEM_ID).
-				if (Forwarding) then 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_EX, IDtoMA.source'length)); 
-				else 
-					IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length)); 
-				end if;
 				
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));

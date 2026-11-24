@@ -42,7 +42,7 @@ entity usuario is
 		ProgName	: STRING := "testF.asm";
 		Pipelining	: BOOLEAN := true;
 		Cores 		: INTEGER := 1;
-		Forwarding  : BOOLEAN := false);  	
+		Forwarding  : BOOLEAN := true);  	
 			
 end usuario;
 
