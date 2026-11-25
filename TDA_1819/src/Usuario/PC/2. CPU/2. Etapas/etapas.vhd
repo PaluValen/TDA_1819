@@ -48,7 +48,6 @@ entity etapas is
 		DataRegInEXALU			: out 	std_logic_vector(31 downto 0);
 		DataRegInEXFPU			: out 	std_logic_vector(31 downto 0);
 		DataEXtoWB				: out   std_logic_vector(31 downto 0);
-		DataEXtoRFw				: out 	std_logic_vector(31 downto 0); --Se�al para enviar salida de la etapa execute al registro de Forwarding
 		DataMAtoWB				: out   std_logic_vector(31 downto 0);
 		DataRegInIF				: out   std_logic_vector(31 downto 0);
 		WbRegCheckWAW			: out 	writeback_record;
@@ -182,7 +181,6 @@ architecture ETAPAS_ARCHITECTURE of etapas is
 			EnableRegEXALUIP	: out 	std_logic;
 			EnableDecFPWrPend	: out 	std_logic;
 			DataEXtoWB			: out 	std_logic_vector(31 downto 0);
-			DataEXtoRFw			: out 	std_logic_vector(31 downto 0); --Se�al para enviar salida de la etapa execute al registro de Forwarding
 			EnableCheckSTRM		: out 	std_logic;
 			EXFPUPending		: out	std_logic;
 			EnableEXALU			: inout std_logic;
@@ -312,7 +310,6 @@ begin
 			EnableRegEXALUIP	=> EnableRegEXALUIP,
 			EnableDecFPWrPend	=> EnableDecFPWrPend,
 			DataEXtoWB			=> DataEXtoWB,
-			DataEXtoRFw			=> DataEXtoRFw, --MAPEO DE SE�AL DE FORWARDING
 			EnableCheckSTRM		=> EnableCheckSTRM,
 			EXFPUPending		=> EXFPUPending,
 			EnableEXALU			=> EnableEXALU,

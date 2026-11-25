@@ -34,5 +34,6 @@
 .\src\Usuario\PC\2. CPU\5. CPU_Admin\cpu_admin.vhd
 .\src\Usuario\PC\2. CPU\6. Reloj\reloj.vhd
 .\src\Usuario\PC\2. CPU\7. Registros\registros.vhd
+.\src\Usuario\PC\2. CPU\8. Forwarding_Unit\forwarding_Unit.vhd
 .\src\Usuario\PC\3. Buses_Admin\buses_admin.vhd
 .\src\Usuario\PC\4. Memoria\memoria.vhd

@@ -217,7 +217,7 @@ begin
 	BEGIN
 	-- Si Forwarding está activo Y es el dato de un store (Escenario 4B): 
 	-- NO disparamos StallRAW porque se adelantará en MEM 
-	if (Forwarding) then 
+	if (Forwarding and IsStoreData = '1') then 
 		null;
 	else 
 		CASE to_integer(unsigned(IdRegID)) IS

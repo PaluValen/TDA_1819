@@ -11,6 +11,8 @@
 -- o leer sobre su secciï¿½n de instrucciones y por ï¿½ltimo envï¿½a al banco de pruebas del 
 -- usuario la seï¿½al de finalizaciï¿½n de la ejecuciï¿½n del programa.
 
+--También se ocupa de comunicar al pipeline los datos y señales necesarias para gestionar el adelantamiento
+
 
 library TDA_1819;
 use TDA_1819.tipos_cpu.all;
@@ -53,6 +55,8 @@ entity cpu is
 end cpu;
 
 architecture CPU_ARCHITECTURE of cpu is
+
+	
 	
 	-- Component declaration of the tested unit
 	component ui
@@ -99,7 +103,6 @@ architecture CPU_ARCHITECTURE of cpu is
 			DataRegInEXALU			: out   std_logic_vector(31 downto 0);
 			DataRegInEXFPU			: out   std_logic_vector(31 downto 0);
 			DataEXtoWB				: out   std_logic_vector(31 downto 0);
-			DataEXtoRFw				: out 	std_logic_vector(31 downto 0); --Seï¿½al para enviar salida de la etapa execute al registro de Forwarding
 			DataMAtoWB				: out   std_logic_vector(31 downto 0);
 			DataRegInIF				: out   std_logic_vector(31 downto 0);
 			WbRegCheckWAW			: out 	writeback_record;
@@ -139,7 +142,7 @@ architecture CPU_ARCHITECTURE of cpu is
 			EnableEXALU				: inout std_logic;
 			EnableEXFPU				: inout std_logic;
 			RecInMA					: in    memaccess_record;
-			RecInWB					: in    writeback_record;
+			RecInWB					: in   writeback_record;
 			DataRegOutIF			: in    std_logic_vector(31 downto 0);
 			DataRegOutID			: in    std_logic_vector(31 downto 0);
 			DataRegOutEXALU			: in    std_logic_vector(31 downto 0);
@@ -175,11 +178,17 @@ architecture CPU_ARCHITECTURE of cpu is
 			IDtoMA				: in  memaccess_record;
 			IDtoWB				: in  writeback_record;
 			DataEXtoWB			: in  std_logic_vector(31 downto 0);
-			DataEXtoRFw			: in  std_logic_vector(31 downto 0); --Seï¿½al de resultado adelantado por forwarding enviada al pipeline para dirigir a Memory Access
 			DataMAtoWB			: in  std_logic_vector(31 downto 0); 
+			DataRegInWB			: in  std_logic_vector(31 downto 0);
 			EnablePDA_ID		: in  std_logic;
 			EnablePDA_EX		: in  std_logic;
-			EnablePDA_MA		: in  std_logic);
+			EnablePDA_MA		: in  std_logic;
+			FwdControl			: in  std_logic_vector(1 downto 0);
+			EXDestReg   		: out std_logic_vector(7 downto 0);
+			EXOp        		: out std_logic_vector(7 downto 0);
+			MASourceReg 		: out std_logic_vector(7 downto 0);
+			WBMode				: out std_logic_vector(7 downto 0);
+			WBDestReg 			: out std_logic_vector(7 downto 0));
 	end component; 
 	
 	component atascos
@@ -276,6 +285,21 @@ architecture CPU_ARCHITECTURE of cpu is
 			EnableRegWB			: in  std_logic);
 	end component;
 	
+	component forwarding_unit
+		generic (
+			Forwarding	: BOOLEAN);
+		port(
+			EXDestReg 	: in std_logic_vector(7 downto 0);
+			--WBDestReg 	: in std_logic_vector(7 downto 0);
+			MASourceReg : in std_logic_vector(7 downto 0);
+			EXOp 		: in std_logic_vector(7 downto 0);
+			--WBMode		: in std_logic_vector(7 downto 0);
+			FwdControl	: out std_logic_vector (1 downto 0);
+			RecInWB     : in  writeback_record -- NUEVO (reemplaza WBDestReg y WBMode)
+
+		);
+	end component;
+	
 	
 	FOR UUT1: ui USE ENTITY WORK.ui(ui_architecture);
 	FOR UUT2: etapas USE ENTITY WORK.etapas(etapas_architecture);
@@ -283,7 +307,8 @@ architecture CPU_ARCHITECTURE of cpu is
 	FOR UUT4: atascos USE ENTITY WORK.atascos(atascos_architecture);
 	FOR UUT5: cpu_admin USE ENTITY WORK.cpu_admin(cpu_admin_architecture);	
 	FOR UUT6: reloj USE ENTITY WORK.reloj(reloj_architecture);
-	FOR UUT7: registros USE ENTITY WORK.registros(registros_architecture);	
+	FOR UUT7: registros USE ENTITY WORK.registros(registros_architecture);
+	FOR UUT8: forwarding_unit USE ENTITY WORK.forwarding_unit(forwarding_unit_architecture);
 		
 	
 	-- Add your code here ...	
@@ -341,7 +366,6 @@ architecture CPU_ARCHITECTURE of cpu is
 	SIGNAL StallSTRW:			std_logic;
 	SIGNAL DoneSTRW:			std_logic;
 	SIGNAL DataEXtoWB: 			std_logic_vector(31 downto 0);
-	SIGNAL DataEXtoRFw:			std_logic_vector(31 downto 0); --Seï¿½al usada para transportar el resultado obtenido del forwarding desde la parte de etapas al pipeline_registros
 	SIGNAL DataRegOutEXALU: 	std_logic_vector(31 downto 0);
 	SIGNAL DataRegOutEXFPU: 	std_logic_vector(31 downto 0);
 	SIGNAL EnableEX: 			std_logic;
@@ -363,6 +387,13 @@ architecture CPU_ARCHITECTURE of cpu is
 	SIGNAL CLK: 				std_logic;
 	SIGNAL CLK_HALF: 			std_logic;
 	SIGNAL IsStoreData:			std_logic;
+	SIGNAL EXDestReg: 			std_logic_vector(7 downto 0);
+	SIGNAL WBDestReg: 			std_logic_vector(7 downto 0);
+	SIGNAL MASourceReg: 		std_logic_vector(7 downto 0);
+	SIGNAL EXOp:  				std_logic_vector(7 downto 0);
+	SIGNAL WBMode:  			std_logic_vector(7 downto 0);
+	SIGNAL FwdControl:			std_logic_vector (1 downto 0);
+	
 
 begin
 	
@@ -392,8 +423,8 @@ begin
 			
 	UUT2: etapas
 		generic map (
-		Pipelining				=> Pipelining,
-		Forwarding 				=> Forwarding)
+			Pipelining				=> Pipelining,
+			Forwarding 				=> Forwarding)
 		port map (
 			StallHLT				=> StallHLT,
 			StopInit				=> StopInit,
@@ -412,7 +443,6 @@ begin
 			DataRegInEXALU			=> DataRegInEXALU,
 			DataRegInEXFPU			=> DataRegInEXFPU,
 			DataEXtoWB				=> DataEXtoWB,
-			DataEXtoRFw				=> DataEXtoRFw,
 			DataMAtoWB				=> DataMAtoWB,
 			DataRegInIF				=> DataRegInIF,
 			WbRegCheckWAW			=> WbRegCheckWAW,
@@ -487,11 +517,17 @@ begin
 			IDtoMA				=> IDtoMA,
 			IDtoWB				=> IDtoWB,
 			DataEXtoWB			=> DataEXtoWB,
-			DataEXtoRFw			=> DataEXtoRFw,
 			DataMAtoWB			=> DataMAtoWB,
+			DataRegInWB			=> DataRegInWB,
 			EnablePDA_ID		=> EnablePDA_ID,
 			EnablePDA_EX		=> EnablePDA_EX,
-			EnablePDA_MA		=> EnablePDA_MA);
+			EnablePDA_MA		=> EnablePDA_MA,
+			FwdControl			=> FwdControl,
+			EXDestReg   		=> EXDestReg,
+			EXOp        		=> EXOp,
+			MASourceReg 		=> MASourceReg,
+			WBMode				=> WBMode,
+			WBDestReg			=> WBDestReg);
 			
 	UUT4: atascos
 		generic map (
@@ -581,7 +617,20 @@ begin
 			EnableRegEXALUWr	=> EnableRegEXALUWr,
 			EnableRegEXFPUWr	=> EnableRegEXFPUWr,
 			EnableRegEXALUIP	=> EnableRegEXALUIP,
-			EnableRegWB			=> EnableRegWB);	
+			EnableRegWB			=> EnableRegWB);
+			
+	UUT8: forwarding_unit
+		generic map (
+			Forwarding			=> Forwarding)
+		port map (				    
+		  	EXDestReg 		    => EXDestReg, 
+			--WBDestReg 			=> WBDestReg,
+			MASourceReg 		=> MASourceReg, 
+			EXOp 				=> EXOp, 
+			--WBMode				=> WBMode,
+			FwdControl			=> FwdControl,
+			RecInWB				=> RecInWB); -- NUEVO (reemplaza WBDestReg y WBMode));
+			
 	
 	-- Add your stimulus here ...
 

@@ -128,6 +128,10 @@ begin
 						for i in SizeBits-1 downto 0 loop
 							DataDataBusOutCpu(i) <= RecInMA.data.execute(i);
 						end loop;
+					elsif (Source = MEM_WB) then
+						for i in SizeBits-1 downto 0 loop
+							DataDataBusOutCpu(i) <= RecInMA.data.writeback(i);
+						end loop;
 					end if;
 					DataCtrlBusCpu <= RecInMA.control;
 					EnableCpuToDataStackMem <= '1';

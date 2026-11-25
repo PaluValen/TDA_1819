@@ -34,7 +34,8 @@
 -- etapa "writeback"; también desplaza a través del banco de registros internos intermedios 
 -- la información originada en la etapa "decode" para las etapas "memory_access" y "writeback", 
 -- transmitiendo a la primera de éstas dos últimas su correspondiente información a fin de 
--- que pueda utilizarla para realizar su ejecución.
+-- que pueda utilizarla para realizar su ejecución. Además aqui se comprueban las condiciones y se realiza
+-- el adelantamiento a la etapa memory access.
 -- InMA: Recibe la señal de habilitación desde el administrador de la CPU para luego 
 -- proceder a almacenar en el banco de registros internos intermedios el dato surgido en
 -- la etapa "memory_access" destinado para la etapa "writeback", añadiéndolo a los datos 
@@ -75,11 +76,19 @@ entity pipeline_registros is
 		IDtoMA			: in  memaccess_record;
 		IDtoWB			: in  writeback_record;
 		DataEXtoWB		: in  std_logic_vector(31 downto 0);
-		DataEXtoRFw		: in  std_logic_vector(31 downto 0); --Señal de resultado adelantado por forwarding enviada al pipeline para dirigir a Memory Access
-		DataMAtoWB		: in  std_logic_vector(31 downto 0); 
+		DataMAtoWB		: in  std_logic_vector(31 downto 0);
+		DataRegInWB		: in  std_logic_vector(31 downto 0);
 		EnablePDA_ID	: in  std_logic;
 		EnablePDA_EX	: in  std_logic;
-		EnablePDA_MA	: in  std_logic);
+		EnablePDA_MA	: in  std_logic;
+		FwdControl		: in std_logic_vector(1 downto 0);
+		EXDestReg   : out std_logic_vector(7 downto 0);
+		EXOp        : out std_logic_vector(7 downto 0);
+		MASourceReg : out std_logic_vector(7 downto 0);
+		WBMode		: out std_logic_vector(7 downto 0);
+		WBDestReg 	: out std_logic_vector(7 downto 0)
+		
+		);
 
 end pipeline_registros;
 
@@ -96,19 +105,34 @@ architecture pipeline_registros_architecture of pipeline_registros is
 	
 	-- Registro intermedio de forwarding para el resultado de EX hacia MA (inicializa con todo en 0)
 	SIGNAL RegFwdEXtoMA: std_logic_vector(31 downto 0) := (others => '0');
+	-- Registro intermedio de forwarding para el resultado de WB hacia MA (inicializa con todo en 0)
+	SIGNAL RegFwdWBtoMA: std_logic_vector(31 downto 0) := (others => '0');
 	
 	SIGNAL WBRecords: 	writeback_records(2 downto 0);
 	SIGNAL WBFPRecords: writeback_records(5 downto 0);
 
 	
-begin	
+begin
 	
-		
+	
+	MASourceReg <= MARecords(0).srcreg;
+
+	EXDestReg <= std_logic_vector(unsigned(WBRecords(0).mode) - 1)
+             when (PipeNO(0) = '1' and unsigned(WBRecords(0).mode) /= WB_NULL)
+             else X"FF";
+
+	EXOp <= std_logic_vector(to_unsigned(EX_ADD, 8))
+        when (PipeNO(0) = '1' and unsigned(WBRecords(0).mode) /= WB_NULL
+              and unsigned(WBRecords(0).source) = WB_EX)
+        else std_logic_vector(to_unsigned(EX_NULL, 8));
+	
+			
 	InID: PROCESS
 	
 	VARIABLE First: BOOLEAN := true;
 	
 	BEGIN
+		
 		if (First) then
 			First := false;
 			PipeNO <= "ZZZ";
@@ -179,13 +203,13 @@ begin
 		PipeFP(3) <= PipeFP(4);
 		PipeFP(2) <= PipeFP(3);
 		PipeFP(1) <= PipeFP(2);
-		--MARecords(0).data.execute <= DataEXtoWB;
 		WBRecords(1).data.execute <= DataEXtoWB;
 		WBFPRecords(1).data.execute <= DataEXtoWB;
+		
 		WAIT FOR 1 ns;
 		
-		if ((StallSTRW = '0') and (StallWAWAux = '0')) then	--Si no hay ningún atasco, se carga el resultado de execute en el registro intermedio de adelantamiento
-    		RegFwdEXtoMA <= DataEXtoRFw;
+		if ((StallSTRW = '0') and (StallWAWAux = '0')) then
+			RegFwdEXtoMA <= DataEXtoWB;
 		end if;
 		
 		if ((StallSTRW = '1') or (StallWAWAux = '1')) then 
@@ -203,13 +227,23 @@ begin
 			RecInMA <= MAFPRecords(0);
 		elsif (PipeNO(1) = '1') then
 			RecInMA <= MARecords(0);
-			if Forwarding then
-    			if ((MARecords(0).mode = std_logic_vector(to_unsigned(MEM_MEM, MARecords(0).mode'length))) and
-        		(MARecords(0).control(READ_WRITE_POS) = WRITE_MEM)) then
-      				RecInMA.source <= std_logic_vector(to_unsigned(MEM_EX, RecInMA.source'length));
-      				RecInMA.data.execute <= RegFwdEXtoMA;
-				end if;
-    end if;
+			if not Forwarding then
+				NULL;				
+    		elsif ((MARecords(0).mode = std_logic_vector(to_unsigned(MEM_MEM, MARecords(0).mode'length))) and
+        	(MARecords(0).control(READ_WRITE_POS) = WRITE_MEM)) then
+				CASE (to_integer(unsigned(FwdControl))) IS
+					WHEN FWD_NULL =>
+						NULL;
+					WHEN FWD_EX	  =>
+						RecInMA.source <= std_logic_vector(to_unsigned(MEM_EX, RecInMA.source'length));
+      					RecInMA.data.execute <= RegFwdEXtoMA;
+					WHEN FWD_WB	  =>
+						RecInMA.source <= std_logic_vector(to_unsigned(MEM_WB, RecInMA.source'length));
+      					RecInMA.data.writeback <= RegFwdWBtoMA;
+					WHEN OTHERS	  =>
+						NULL;
+				END CASE;
+			end if;
 		else
 			RecInMA.mode <= std_logic_vector(to_unsigned(MEM_NULL, RecInMA.mode'length));
 			--report "Error al cargar los datos para ejecutar la etapa de acceso a memoria"
@@ -229,6 +263,12 @@ begin
 		--WAIT FOR 1 ns;
 		WBRecords(0).data.memaccess <= DataMAtoWB; 
 		WBFPRecords(0).data.memaccess <= DataMAtoWB;
+		
+		
+		if ((StallSTRW = '0') and (StallWAWAux = '0')) then	--Si no hay ningún atasco, se carga el resultado de writeback en el registro intermedio de adelantamiento de writeback
+    		RegFwdWBtoMA <= DataRegInWB;			
+		end if;
+		
 		WAIT FOR 1 ns;
 		if (PipeFP(0) = '1') then
 			RecInWB <= WBFPRecords(0);

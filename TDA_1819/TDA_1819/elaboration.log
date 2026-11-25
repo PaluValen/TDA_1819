@@ -1,4 +1,4 @@
-Active-HDL 17.0.292.10043 2026-11-24 09:29:43
+Active-HDL 17.0.292.10043 2026-11-25 01:30:12
 
 Elaboration top modules:
 Architecture                  USUARIO_ARCHITECTURE(usuario)
@@ -20,6 +20,7 @@ atascos            | ATASCOS_ARCHITECTURE            | TDA_1819      |      | 17
 cpu_admin          | cpu_admin_architecture          | TDA_1819      |      | 17.0.292.10043 (Windows64) | -O3
 reloj              | reloj_architecture              | TDA_1819      |      | 17.0.292.10043 (Windows64) | -O3
 registros          | REGISTROS_ARCHITECTURE          | TDA_1819      |      | 17.0.292.10043 (Windows64) | -O3
+forwarding_unit    | FORWARDING_UNIT_ARCHITECTURE    | TDA_1819      |      | 17.0.292.10043 (Windows64) | -O3
 states_machine     | STATES_MACHINE_ARCHITECTURE     | TDA_1819      |      | 17.0.292.10043 (Windows64) | -O3
 registros_fp       | REGISTROS_FP_ARCHITECTURE       | TDA_1819      |      | 17.0.292.10043 (Windows64) | -O3
 fetch              | fetch_architecture              | TDA_1819      |      | 17.0.292.10043 (Windows64) | -O3
@@ -70,7 +71,7 @@ TDA_1819                                             | None
 --------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Simulation Options: asim -t ns -O5 +access +r +m+usuario usuario
+Simulation Options: asim -t ns -O5 +access +r +m+usuario usuario USUARIO_ARCHITECTURE
 
 
 The performance of simulation is reduced. Version Student Edition

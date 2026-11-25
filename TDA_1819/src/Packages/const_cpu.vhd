@@ -75,6 +75,7 @@ PACKAGE const_cpu is
 	
 	CONSTANT MEM_ID:		INTEGER := 0;		-- El dato a escribir en memoria se originó en la etapa Decode
 	CONSTANT MEM_EX:		INTEGER := 1;		-- El dato a escribir en memoria se originó en la etapa Execute
+	CONSTANT MEM_WB:		INTEGER := 2;		-- El dato a escribir en memoria se originó en la etapa Writeback
 	
 	CONSTANT WB_NULL:		INTEGER := 0;		-- La instrucción actual no implica almacenar datos o resultados
 												-- en ninguno de los registros de uso general en la etapa Writeback																														
@@ -86,6 +87,12 @@ PACKAGE const_cpu is
 	CONSTANT WB_MEM:		INTEGER := 3;		-- El valor a almacenar en el banco de registros de uso general se originó en la 
 												-- etapa Memory Access
 	
+												
+	CONSTANT FWD_NULL:		INTEGER := 0;		--No se realiza adelantamiento
+	
+	CONSTANT FWD_EX:		INTEGER := 1;	    --El dato adelantado viene de la etapa de Execute
+	
+	CONSTANT FWD_WB:		INTEGER := 2;		--El dato adelantado viene de la etapa de WriteBack
 											
 END const_cpu;
 

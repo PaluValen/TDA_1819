@@ -67,7 +67,6 @@ entity execute is
 		EnableRegEXALUIP	: out 	std_logic;
 		EnableDecFPWrPend	: out 	std_logic;
 		DataEXtoWB			: out 	std_logic_vector(31 downto 0);
-		DataEXtoRFw			: out 	std_logic_vector(31 downto 0); --Señal para enviar salida de la etapa execute al registro de Forwarding
 		EnableCheckSTRM		: out 	std_logic;
 		EXFPUPending		: out	std_logic;
 		EnableEXALU			: inout std_logic;
@@ -308,7 +307,6 @@ begin
 			if (Op /= EX_NULL) then
 				WAIT UNTIL (DoneEXALU = '1');
 				DataEXtoWB <= DataEXALUtoWB;
-				DataEXtoRFw <= DataEXALUtoWB;
 			end if;
 		end if;
 		if (EnableEXFPU = '0') then
@@ -316,13 +314,11 @@ begin
 				WAIT UNTIL rising_edge(DoneEXFPU);
 			end if;
 			DataEXtoWB <= DataEXFPUtoWB;
-			DataEXtoRFw <= DataEXFPUtoWB;
 		end if;
 		if ((EnableEXALU = '1') and (EnableEXFPU = '1')) then
 			WAIT FOR 1 ns;
 			if (StallSTR = '0') then
 				DataEXtoWB <= DataEXALUtoWB;
-				DataEXtoRFw <= DataEXALUtoWB;
 			end if;
 		end if;
 

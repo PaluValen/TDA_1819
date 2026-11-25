@@ -111,14 +111,15 @@ begin
 		IDtoEX.sign <= 'Z';
 		IDtoEX.op1 <= "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
 		IDtoEX.op2 <= "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
-		IDtoEX.address <= "ZZZZZZZZZZZZZZZZ";
+		IDtoEX.address <= "ZZZZZZZZZZZZZZZZ"; 
 			
 		IDtoMA.mode <= std_logic_vector(to_unsigned(MEM_NULL, IDtoMA.mode'length));
 		IDtoMA.control <= NO_ACCESS_MEM;
 		IDtoMA.datasize <= "ZZZZ";
 		IDtoMA.source <= "ZZZZ";
 		IDtoMA.address <= "ZZZZZZZZZZZZZZZZ";
-		IDtoMA.data.decode <= "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"; 
+		IDtoMA.data.decode <= "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
+		IDtoMA.srcreg <= "ZZZZZZZZ"; --NUEVO
 			
 		IDtoWB.mode <= std_logic_vector(to_unsigned(WB_NULL, IDtoWB.mode'length));
 		IDtoWB.id <= std_logic_vector(to_unsigned(idAux, IDtoWB.mode'length));
@@ -353,6 +354,7 @@ begin
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
 
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
+				IDtoMA.srcreg <= std_logic_vector(to_unsigned(rfAux, 8)); --NUEVO
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(1, SizeRegID'length));
 				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar
@@ -400,6 +402,8 @@ begin
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
 
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
+				
+				IDtoMA.srcreg <= std_logic_vector(to_unsigned(rfAux, 8)); --NUEVO
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(2, SizeRegID'length));
 				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar
@@ -448,7 +452,9 @@ begin
 				IDtoMA.datasize <= std_logic_vector(to_unsigned(4, IDtoMA.datasize'length));
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
 
-				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
+				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0))); 
+				
+				IDtoMA.srcreg <= std_logic_vector(to_unsigned(rfAux, 8)); --NUEVO
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(4, SizeRegID'length));
 				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar
@@ -493,6 +499,8 @@ begin
 				IDtoMA.source <= std_logic_vector(to_unsigned(MEM_ID, IDtoMA.source'length));
 				
 				rfAux := to_integer(unsigned(IFtoIDLocal.package1(7 downto 0)));
+				
+				IDtoMA.srcreg <= std_logic_vector(to_unsigned(rfAux, 8)); --NUEVO
 				IdRegID <= std_logic_vector(to_unsigned(rfAux, IdRegID'length));
 				SizeRegID <= std_logic_vector(to_unsigned(4, SizeRegID'length));
 				IsStoreData <= '1'; -- Aca se pone en 1 para avisar al detector que es el dato a guardar

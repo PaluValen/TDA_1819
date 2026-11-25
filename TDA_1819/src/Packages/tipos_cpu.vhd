@@ -72,6 +72,7 @@ PACKAGE tipos_cpu is
 	TYPE memaccess_data IS RECORD
 		decode: std_logic_vector(31 downto 0);
 		execute: std_logic_vector(31 downto 0);
+		writeback: std_logic_vector(31 downto 0);
 	END RECORD;
 	
 	TYPE memaccess_record IS RECORD
@@ -80,6 +81,7 @@ PACKAGE tipos_cpu is
 		datasize: std_logic_vector(3 downto 0);
 		source: std_logic_vector(3 downto 0);
 		address: std_logic_vector(15 downto 0);
+		srcreg: std_logic_vector(7 downto 0);   -- NUEVO
 		data: memaccess_data;
 	END RECORD;	
 	
